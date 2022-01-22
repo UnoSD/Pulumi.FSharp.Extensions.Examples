@@ -1,0 +1,12 @@
+encryptionsalt: v1:Ti2Q3GXn9zU=:v1:P132P9T50pDxgU+9:JY+D8Ysz7zhGEFyMjUxoUfxpMiHAXQ==
+config:
+  DevelopmentVM:shareName: share
+  DevelopmentVM:storageAccount: yourStorageAccount
+  DevelopmentVM:storageKey:
+    secure: v1:kQT2nio5nytkrt/z:maRjWne3ioQDuUQK2/XzanN22MpbyWv32Z6ZsP8z
+  DevelopmentVM:vmDnsLabel: yourDnsLabel
+  DevelopmentVM:vmPass:
+    secure: v1:gS2HPf2wtPdT6WT3:F4fbMat09MGYvYpCmpAEyJJYDIyYhxAgN8E=
+  DevelopmentVM:vmShutdownNotifyEmail: your@email.com
+  DevelopmentVM:vmUser: yourVmUser
+  azure-native:location: Switzerland North
