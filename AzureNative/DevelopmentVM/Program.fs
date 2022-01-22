@@ -15,6 +15,7 @@ open Pulumi.AzureNative.Storage
 open Pulumi.FSharp.Outputs
 open Pulumi.FSharp.Config
 open Pulumi.FSharp.Assets
+open Pulumi.Command.Local
 open System.Text.Json
 open Pulumi.FSharp
 open DevelopmentVM
@@ -82,8 +83,24 @@ Deployment.run (fun () ->
             virtualNetworkName vnet.Name
             addressPrefix      "10.0.1.0/24"
             subnetNsg          { id nsg.Id }
+            
+            serviceEndpoints [
+                serviceEndpointPropertiesFormat {
+                    service "Microsoft.Storage"
+                }
+            ]
         }
 
+    let storageResourceGroup, storage =
+        config.["storageResourceGroup"], config.["storageAccount"]
+    
+    let arguments =
+        Output.Format($"--resource-group {storageResourceGroup} --account-name {storage} --subnet {snet.Id}")
+    
+    Command("az-add-network-acl",
+            CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
+                        Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))))
+    
     let pip =
         publicIPAddress {
             name                     $"pip-dev-{Deployment.Instance.StackName}-{Region.short}-001"

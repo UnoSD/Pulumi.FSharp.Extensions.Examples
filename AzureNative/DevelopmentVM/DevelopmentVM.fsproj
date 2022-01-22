@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="4.2.7" />
+    <PackageReference Include="Pulumi.Command" Version="0.0.3" />
     <PackageReference Include="Pulumi.FSharp.Azure" Version="4.34.0.1" />
     <PackageReference Include="Pulumi.FSharp.AzureAD" Version="5.14.0.1" />
     <PackageReference Include="Pulumi.FSharp.AzureNative" Version="1.53.0.3" />

@@ -2,6 +2,7 @@ encryptionsalt: v1:Ti2Q3GXn9zU=:v1:P132P9T50pDxgU+9:JY+D8Ysz7zhGEFyMjUxoUfxpMiHA
 config:
   DevelopmentVM:shareName: share
   DevelopmentVM:storageAccount: yourStorageAccount
+  DevelopmentVM:storageResourceGroup: yourStorageResourceGroup
   DevelopmentVM:storageKey:
     secure: v1:kQT2nio5nytkrt/z:maRjWne3ioQDuUQK2/XzanN22MpbyWv32Z6ZsP8z
   DevelopmentVM:vmDnsLabel: yourDnsLabel
