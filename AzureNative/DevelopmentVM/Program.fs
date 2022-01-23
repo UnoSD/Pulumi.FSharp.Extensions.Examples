@@ -9,6 +9,7 @@ open Pulumi.FSharp.AzureNative.Resources
 open Pulumi.FSharp.AzureNative.Network
 open Pulumi.FSharp.AzureNative.Compute
 open Pulumi.FSharp.AzureNative.Storage
+open Pulumi.AzureNative.Authorization
 open Pulumi.AzureNative.DevTestLab
 open Pulumi.AzureNative.Network
 open Pulumi.AzureNative.Compute
@@ -92,17 +93,6 @@ Deployment.run (fun () ->
             ]
         }
 
-    let storageResourceGroup, storage =
-        config.["storageResourceGroup"], config.["storageAccount"]
-    
-    let arguments =
-        Output.Format($"--resource-group {storageResourceGroup} --account-name {storage} --subnet {snet.Id}")
-    
-    let updateStorageNetworkAcls =
-        Command("az-add-network-acl",
-                CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
-                            Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))))
-    
     let pip =
         publicIPAddress {
             name                     $"pip-dev-{Deployment.Instance.StackName}-{Region.short}-001"
@@ -214,15 +204,37 @@ Deployment.run (fun () ->
             resourceGroup rg.Name            
         }
     
-    let storageBlobDataReader =
-        "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
+    let subscriptionId =
+        output {
+            let! result =
+                GetClientConfig.InvokeAsync()
+                
+            return result.SubscriptionId
+        }
     
-    roleAssignment {
-        name             "vm-read-ps-container"
-        scope            container.Id
-        principalId      (vm.Identity.Apply(fun id -> id.PrincipalId))
-        roleDefinitionId storageBlobDataReader
-    }
+    let storageBlobDataReader =
+        Output.Format($"/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/2a2b9908-6ea1-4ae2-8e65-a410df84e7d1")
+    
+    let assignment =
+        roleAssignment {
+            name               "vm-read-ps-container"
+            scope              container.Id
+            principalId        (vm.Identity.Apply(fun id -> id.PrincipalId))
+            principalType      PrincipalType.ServicePrincipal
+            roleDefinitionId   storageBlobDataReader
+        }
+    
+    let storageResourceGroup, storageName, storageSubscription =
+        config.["storageResourceGroup"], config.["storageAccount"], config.["storageSubscription"]
+    
+    let arguments =
+        Output.Format($"-g {storageResourceGroup} -n {storageName} --subnet {snet.Id} --subscription {storageSubscription}")
+    
+    let updateStorageNetworkAcls =
+        Command("az-add-network-acl",
+                CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
+                            Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))),
+                CustomResourceOptions(DependsOn = inputList [ input snet ]))
     
     let scriptBlobUrl =
         output {
@@ -277,7 +289,11 @@ Deployment.run (fun () ->
         publisher          "Microsoft.Compute"
         typeHandlerVersion "1.10"
         protectedSettings  extSettings
-        dependsOn          updateStorageNetworkAcls
+        
+        dependsOn          [
+            assignment               :> Resource
+            updateStorageNetworkAcls
+        ]
     }
 
     dict [ "FQDN"    , pip.DnsSettings.Apply(fun x -> x.Fqdn) :> obj

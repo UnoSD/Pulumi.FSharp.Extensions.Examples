@@ -12,6 +12,7 @@ Replace the default configuration with the preferred as needed (for security rea
 pulumi config set azure-native:location "West Europe"
 pulumi config set shareName share
 pulumi config set storageAccount yourStorageAccount
+pulumi config set storageSubscription yourStorageSubscription
 pulumi config set --secret storageKey yourStorageKey
 pulumi config set vmDnsLabel yourDnsLabel
 pulumi config set --secret vmPass P@ssw0rd1_
