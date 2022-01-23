@@ -98,9 +98,10 @@ Deployment.run (fun () ->
     let arguments =
         Output.Format($"--resource-group {storageResourceGroup} --account-name {storage} --subnet {snet.Id}")
     
-    Command("az-add-network-acl",
-            CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
-                        Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))))
+    let updateStorageNetworkAcls =
+        Command("az-add-network-acl",
+                CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
+                            Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))))
     
     let pip =
         publicIPAddress {
@@ -276,7 +277,7 @@ Deployment.run (fun () ->
         publisher          "Microsoft.Compute"
         typeHandlerVersion "1.10"
         protectedSettings  extSettings
-        // DependsOn "Command" (network ACLs to mount network drive)
+        dependsOn          updateStorageNetworkAcls
     }
 
     dict [ "FQDN"    , pip.DnsSettings.Apply(fun x -> x.Fqdn) :> obj
