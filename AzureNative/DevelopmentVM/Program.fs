@@ -3,6 +3,7 @@
 open Pulumi.FSharp.AzureNative.DevTestLab.Inputs
 open Pulumi.FSharp.AzureNative.Compute.Inputs
 open Pulumi.FSharp.AzureNative.Network.Inputs
+open Pulumi.FSharp.AzureNative.Authorization
 open Pulumi.FSharp.AzureNative.DevTestLab
 open Pulumi.FSharp.AzureNative.Resources
 open Pulumi.FSharp.AzureNative.Network
@@ -165,11 +166,15 @@ Deployment.run (fun () ->
                 }
                 
                 imageReference {
-                    offer     "visualstudio2019latest"
-                    publisher "microsoftvisualstudio"
-                    sku       "vs-2019-ent-latest-win10-n"
+                    offer     "visualstudio2022"
+                    publisher "MicrosoftVisualStudio"
+                    sku       "vs-2022-ent-latest-win11-n"
                     version   "latest"
                 }
+            }
+            
+            virtualMachineIdentity {
+                ResourceIdentityType.SystemAssigned
             }
         }
     
@@ -208,6 +213,16 @@ Deployment.run (fun () ->
             resourceGroup rg.Name            
         }
     
+    let storageBlobDataReader =
+        "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
+    
+    roleAssignment {
+        name             "vm-read-ps-container"
+        scope            container.Id
+        principalId      (vm.Identity.Apply(fun id -> id.PrincipalId))
+        roleDefinitionId storageBlobDataReader
+    }
+    
     let scriptBlobUrl =
         output {
             let! storageKey =
@@ -235,42 +250,16 @@ Deployment.run (fun () ->
             return! blob.Url
         }
 
-    
-    let sas =
-        output {
-            let! accountName =
-                sa.Name
-        
-            let! resourceGroupName =
-                rg.Name
-                    
-            let! blobUrl =
-                scriptBlobUrl
-                
-            let! result =
-                ListStorageAccountServiceSASArgs(
-                    AccountName            = accountName,
-                    Protocols              = HttpProtocol.Https,
-                    Permissions            = Union.FromT1 Permissions.R,
-                    ResourceGroupName      = resourceGroupName,
-                    CanonicalizedResource  = $"/blob/{accountName}{Uri(blobUrl).AbsolutePath}",
-                    Resource               = Union.FromT1 SignedResource.B,
-                    SharedAccessExpiryTime = DateTime.UtcNow.AddHours(2.).ToString("O")
-                    ) |>
-                ListStorageAccountServiceSAS.InvokeAsync
-                
-            return blobUrl + "?" + result.ServiceSasToken
-        }
-
     let extSettings =
         secretOutput {
-            let! fileUrl =
-                sas
+            let! blobUrl =
+                scriptBlobUrl
             
             let value =
                 {|
-                    fileUris         = [ fileUrl ]
+                    fileUris         = [ blobUrl ]
                     commandToExecute = "powershell -ExecutionPolicy Unrestricted -File CustomScript.ps1"
+                    managedIdentity  = Object()
                 |} |>
                 JsonSerializer.Serialize
             
@@ -287,6 +276,7 @@ Deployment.run (fun () ->
         publisher          "Microsoft.Compute"
         typeHandlerVersion "1.10"
         protectedSettings  extSettings
+        // DependsOn "Command" (network ACLs to mount network drive)
     }
 
     dict [ "FQDN"    , pip.DnsSettings.Apply(fun x -> x.Fqdn) :> obj
