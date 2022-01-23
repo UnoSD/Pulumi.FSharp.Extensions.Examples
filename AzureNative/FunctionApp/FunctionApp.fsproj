@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <FSharpCoreImplicitPackageVersion>6.0.*</FSharpCoreImplicitPackageVersion>
+    <NoWarn>FS0020</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Pulumi.yaml" />
+    <None Include="Pulumi.dev.yaml" />
+    <Compile Include="FunctionApp.fs" />
+    <Compile Include="Program.fs" />
+    <None Include="publish.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pulumi.FSharp.AzureNative" Version="1.53.0.3" />
+    <PackageReference Update="FSharp.Core" Version="6.0.1" />
+    <PackageReference Include="Pulumi.FSharp.Core" Version="3.0.2" />
+  </ItemGroup>
+
+</Project>

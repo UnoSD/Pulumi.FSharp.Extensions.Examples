@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{1C936DCC-9
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FunctionApp", "AzureNative\FunctionApp\FunctionApp.fsproj", "{D8502631-8EC7-47BA-A6AB-20C042E602F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{78CF72D6-1BC1-4C36-A1B1-E247A3B6777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78CF72D6-1BC1-4C36-A1B1-E247A3B6777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78CF72D6-1BC1-4C36-A1B1-E247A3B6777B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
