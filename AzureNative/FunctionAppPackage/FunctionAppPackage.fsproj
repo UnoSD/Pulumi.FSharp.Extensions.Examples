@@ -9,15 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Region.fs" />
     <Compile Include="FunctionAppPackage.fs" />
-    <Compile Include="ComputationalExpression.fs" />    
+    <Compile Include="ComputationalExpression.fs" />
     <Compile Include="Program.fs" />
     <None Include="Pulumi.yaml" />
     <None Include="Pulumi.dev.yaml" />
     <None Include="README.md" />
     <None Include="publish.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>    
+    </None>
   </ItemGroup>
 
   <ItemGroup>

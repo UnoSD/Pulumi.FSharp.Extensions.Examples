@@ -12,5 +12,5 @@ Deployment.run (fun () ->
             projectPackagePublishPath config.["projectPublishPath"]
         }
     
-    dict [ "Function ID", functionAppInfrastructure.App.Id :> obj ]
+    dict []
 )

@@ -1,5 +1,6 @@
 module Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternals
 
+open Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternalsRegion
 open Pulumi.FSharp.AzureNative.KeyVault.Inputs
 open Pulumi.FSharp.AzureNative.Storage.Inputs
 open Pulumi.FSharp.AzureNative.Authorization
@@ -26,24 +27,24 @@ type FunctionAppPackageResources =
         Insight   : Component
         Plan      : AppServicePlan
         App       : WebApp
-        RID       : Output<string>
     }
 
-let private kvSku = KeyVault.Inputs.sku
-
-let create workload (resourceGroupNameOutput : Input<string>) functionAppPublishPath =
+let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
+    let stack =
+        Deployment.Instance.StackName
+    
     let storage =
         storageAccount {
-            name          $"sa{workload}"
-            resourceGroup resourceGroupNameOutput
+            name          $"sa{workload}{stack}{short}001"
+            resourceGroup resourceGroupName
             sku           { name SkuName.Standard_LRS }
             kind          Kind.StorageV2
         }
         
     let functionPlan =
         appServicePlan {
-            name          $"asp-{workload}"
-            resourceGroup resourceGroupNameOutput            
+            name          $"asp-{workload}-{stack}-{short}-001"
+            resourceGroup resourceGroupName            
             kind          "Linux"
             reserved      true
             
@@ -56,7 +57,7 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
     let container =
         blobContainer {
             accountName   storage.Name
-            resourceGroup resourceGroupNameOutput
+            resourceGroup resourceGroupName
             name          "deployment"
             
             PublicAccess.None
@@ -66,57 +67,24 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
         blob {
             name          "application.zip"
             containerName container.Name
-            resourceGroup resourceGroupNameOutput
+            resourceGroup resourceGroupName
             accountName   storage.Name
             source        { ArchivePath = functionAppPublishPath }.ToPulumiType
             
             BlobType.Block
         }
-    
-    // Managed identity to get package is not yet supported (? check!)
-    let codeBlobUrl =
-        secretOutput {
-            let! accountName =
-                storage.Name
-            
-            let! groupName =
-                resourceGroupNameOutput.ToOutput()
-        
-            let! containerName =
-                container.Name
-
-            let! blobName =
-                applicationBlob.Name
-
-            let! result =
-                ListStorageAccountServiceSASArgs(
-                    AccountName            = accountName,
-                    Protocols              = HttpProtocol.Https,
-                    SharedAccessStartTime  = "2022-01-01",
-                    SharedAccessExpiryTime = "2022-12-30",
-                    Resource               = Union.FromT1 SignedResource.B,
-                    ResourceGroupName      = groupName,
-                    Permissions            = Union.FromT1 Permissions.R,
-                    CanonicalizedResource  = $"/blob/{accountName}/{containerName}/{blobName}")
-                |> ListStorageAccountServiceSAS.InvokeAsync
-            
-            let! blobUrl =
-                applicationBlob.Url
-                
-            return $"{blobUrl}?{result.ServiceSasToken}"
-        }
 
     let appInsights =
         ``component`` {
-            name            $"ai-{workload}"
-            resourceGroup   resourceGroupNameOutput
+            name            $"ai-{workload}-{stack}-{short}-001"
+            resourceGroup   resourceGroupName
             kind            "web"
         }
         
     let storageConnectionString =
         secretOutput {
             let! groupName =
-                resourceGroupNameOutput.ToOutput()
+                resourceGroupName.ToOutput()
 
             let! accountName =
                 storage.Name
@@ -144,47 +112,47 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
             return result.TenantId
         }
 
+    let subscriptionId =
+        output {
+            let! result =
+                GetClientConfig.InvokeAsync()
+                
+            return result.SubscriptionId
+        }
+
     let keyVault =
         vault {
-            name          $"kv-{workload}"
-            resourceGroup resourceGroupNameOutput
+            name          $"kv{workload}{stack}{short}001"
+            resourceGroup resourceGroupName
             
             vaultProperties {
                 enableRbacAuthorization true
                 tenantId                currentTenantId
-                kvSku {
+                
+                KeyVault.Inputs.sku {
                     family SkuFamily.A                    
                     SkuName.Standard                    
                 }
             }
         }
 
+    // Can we use MI?
     let csSecret =
         secret {
             vaultName     keyVault.Name
-            resourceGroup resourceGroupNameOutput
+            resourceGroup resourceGroupName
             name          "storageConnectionString"
             
             secretProperties {
                 value storageConnectionString
             }
         }
-    
-    let blobUrlSecret =
-        secret {
-            vaultName     keyVault.Name
-            resourceGroup resourceGroupNameOutput
-            name          "applicationBlobSasUrl"
-            
-            secretProperties {
-                value codeBlobUrl
-            }
-        }
         
+    // Can we use MI?
     let instrumentationKeySecret =
         secret {
             vaultName     keyVault.Name
-            resourceGroup resourceGroupNameOutput
+            resourceGroup resourceGroupName
             name          "instrumentationKey"
             
             secretProperties {
@@ -205,8 +173,8 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
     
     let webApp =
         webApp {
-            name               $"app-{workload}"
-            resourceGroup      resourceGroupNameOutput
+            name               $"func-{workload}-{stack}-{short}-001"
+            resourceGroup      resourceGroupName
             serverFarmId       functionPlan.Id
             kind               "FunctionApp"
             
@@ -219,15 +187,26 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
                     nameValuePair { name "AzureWebJobsStorage"           ; value (kvReference csSecret.Name)                 }
                     nameValuePair { name "runtime"                       ; value "dotnet"                                    }
                     nameValuePair { name "FUNCTIONS_EXTENSION_VERSION"   ; value "~3"                                        }
-                    nameValuePair { name "WEBSITE_RUN_FROM_PACKAGE"      ; value (kvReference blobUrlSecret.Name)            }
+                    nameValuePair { name "WEBSITE_RUN_FROM_PACKAGE"      ; value applicationBlob.Url                         }
                     nameValuePair { name "APPINSIGHTS_INSTRUMENTATIONKEY"; value (kvReference instrumentationKeySecret.Name) }
                 ]
             }
         }
     
+    let ``Storage Blob Data Reader`` =
+        "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
+    
+    roleAssignment {
+        name             "function-to-container-read"
+        principalId      (webApp.Identity.Apply(fun wai -> wai.PrincipalId))
+        principalType    PrincipalType.ServicePrincipal
+        roleDefinitionId (Output.Format($"/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/{``Storage Blob Data Reader``}"))
+        scope            container.Id
+    }
+    
     let ``Key Vault Secrets User`` = "4633458b-17de-408a-b874-0445c86b69e6"
     
-    let assignmentId =
+    let _ =
         output {
             let! appIdentity =
                 webApp.Identity
@@ -235,13 +214,10 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
             let! csSecredId =
                 csSecret.Id
                 
-            let! blobUrlSecretId =
-                blobUrlSecret.Id
-
             let! instrumentationKeySecretId =
                 instrumentationKeySecret.Id
                 
-            let! assignment1 =
+            let! assignmentCs =
                 roleAssignment {
                     name               "functionAppReadsKeyVaultCs"
                     principalId        appIdentity.PrincipalId
@@ -252,18 +228,7 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
                 }
                 |> fun a -> a.Id
                 
-            let! assignment2 =
-                roleAssignment {
-                    name               "functionAppReadsKeyVaultBu"
-                    principalId        appIdentity.PrincipalId
-                    roleAssignmentName "920ef309-2f1c-4c03-afa4-3cbca37e5bb4" // (System.Guid.NewGuid().ToString()) cached
-                    roleDefinitionId   $"/{blobUrlSecretId}/providers/Microsoft.Authorization/roleDefinitions/{``Key Vault Secrets User``}"
-                    scope              blobUrlSecretId
-                    principalType      PrincipalType.ServicePrincipal
-                }
-                |> fun a -> a.Id
-                
-            let! assignment3 =
+            let! assignmentIk =
                 roleAssignment {
                     name               "functionAppReadsKeyVaultIk"
                     principalId        appIdentity.PrincipalId
@@ -274,7 +239,7 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
                 }
                 |> fun a -> a.Id
                 
-            return $"{assignment1.[0]}{assignment2.[0]}{assignment3.[0]}"
+            return $"{assignmentCs.[0]}{assignmentIk.[0]}"
         }
     
     {
@@ -284,5 +249,4 @@ let create workload (resourceGroupNameOutput : Input<string>) functionAppPublish
         Insight   = appInsights
         Plan      = functionPlan
         App       = webApp
-        RID       = assignmentId
     }
