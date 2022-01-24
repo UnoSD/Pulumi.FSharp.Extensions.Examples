@@ -1,6 +1,5 @@
-module Pulumi.FSharp.AzureNative.Components.FunctionApp
+module Pulumi.FSharp.AzureNative.Components.FunctionAppPackage
 
-open Pulumi.AzureNative.Authorization
 open Pulumi.FSharp.AzureNative.KeyVault.Inputs
 open Pulumi.FSharp.AzureNative.Storage.Inputs
 open Pulumi.FSharp.AzureNative.Authorization
@@ -8,6 +7,7 @@ open Pulumi.FSharp.AzureNative.Web.Inputs
 open Pulumi.FSharp.AzureNative.Insights
 open Pulumi.FSharp.AzureNative.KeyVault
 open Pulumi.FSharp.AzureNative.Storage
+open Pulumi.AzureNative.Authorization
 open Pulumi.FSharp.AzureNative.Web
 open Pulumi.AzureNative.KeyVault
 open Pulumi.AzureNative.Insights
@@ -18,7 +18,7 @@ open Pulumi.FSharp.Outputs
 open Pulumi.FSharp.Assets
 open Pulumi
 
-type FunctionAppResources =
+type FunctionAppPackageResources =
     {
         Storage   : StorageAccount
         Container : BlobContainer
@@ -31,9 +31,9 @@ type FunctionAppResources =
 
 let private kvSku = KeyVault.Inputs.sku
 
-let create resourcesSuffix
-           (resourceGroupNameOutput : Input<string>)
-           functionAppPublishPath =
+let private create resourcesSuffix
+                   (resourceGroupNameOutput : string)
+                   functionAppPublishPath =
     let storage =
         storageAccount {
             name          $"sa{resourcesSuffix}"
@@ -81,8 +81,8 @@ let create resourcesSuffix
             let! accountName =
                 storage.Name
             
-            let! groupName =
-                resourceGroupNameOutput.ToOutput()
+            let groupName =
+                resourceGroupNameOutput
         
             let! containerName =
                 container.Name
@@ -117,8 +117,8 @@ let create resourcesSuffix
         
     let storageConnectionString =
         secretOutput {
-            let! groupName =
-                resourceGroupNameOutput.ToOutput()
+            let groupName =
+                resourceGroupNameOutput
 
             let! accountName =
                 storage.Name
@@ -288,3 +288,51 @@ let create resourcesSuffix
         App       = webApp
         RID       = assignmentId
     }
+
+type FunctionAppPackageBuilderConfig =
+    {
+        WorkloadName: string option
+        ResourceGroupName: string option
+        ProjectPackagePublishPath: string option
+    }
+
+type FunctionAppPackageBuilder() =
+    member _.Yield(_: unit) = {
+        WorkloadName = None
+        ResourceGroupName = None
+        ProjectPackagePublishPath = None
+    }
+    
+    member _.Run(args) =
+        create args.WorkloadName.Value
+               args.ResourceGroupName.Value
+               args.ProjectPackagePublishPath.Value
+
+    member this.Combine(lArgs, rArgs) = {
+        WorkloadName              = match lArgs.WorkloadName, rArgs.WorkloadName with
+                                    | Some wn, None
+                                    | None   , Some wn -> Some wn
+                                    | None   , None    -> None
+                                    | Some _ , Some _  -> failwith "Duplicate workloadName in functionAppPackage CE"
+        ResourceGroupName         = match lArgs.ResourceGroupName, rArgs.ResourceGroupName with
+                                    | Some wn, None
+                                    | None   , Some wn -> Some wn
+                                    | None   , None    -> None
+                                    | Some _ , Some _  -> failwith "Duplicate resourceGroupName in functionAppPackage CE"
+        ProjectPackagePublishPath = match lArgs.ProjectPackagePublishPath, rArgs.ProjectPackagePublishPath with
+                                    | Some wn, None
+                                    | None   , Some wn -> Some wn
+                                    | None   , None    -> None
+                                    | Some _ , Some _  -> failwith "Duplicate projectPackagePublishPath in functionAppPackage CE"
+    }
+
+    [<CustomOperation("workloadName")>]
+    member _.WorkloadName(args, name) = { args with WorkloadName = Some name }
+    
+    [<CustomOperation("resourceGroupName")>]
+    member _.ResourceGroupName(args, name) = { args with ResourceGroupName = Some name }
+    
+    [<CustomOperation("projectPackagePublishPath")>]
+    member _.ProjectPackagePublishPath(args, path) = { args with ProjectPackagePublishPath = Some path }
+    
+let functionAppPackage = FunctionAppPackageBuilder()

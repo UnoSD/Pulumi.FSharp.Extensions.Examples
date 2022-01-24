@@ -1,13 +1,16 @@
 ﻿module Program
 
-open Pulumi.FSharp.AzureNative.Components
+open Pulumi.FSharp.AzureNative.Components.FunctionAppPackage
 open Pulumi.FSharp.Config
 open Pulumi.FSharp
 
 Deployment.run (fun () ->
-    FunctionApp.create config.["workloadOrApplication"]
-                       (input config.["resourceGroupName"])
-                       config.["projectPublishPath"]
+    let functionAppInfrastructure =
+        functionAppPackage {
+            workloadName              config.["workloadOrApplication"]
+            resourceGroupName         config.["resourceGroupName"]
+            projectPackagePublishPath config.["projectPublishPath"]
+        }
     
-    dict []
+    dict [ "Function ID", functionAppInfrastructure.App.Id :> obj ]
 )

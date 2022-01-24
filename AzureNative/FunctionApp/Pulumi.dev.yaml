@@ -1,5 +1,6 @@
 encryptionsalt: v1:nU2wb8MGKgg=:v1:gEgpsGfyldgUOYyT:GwbXSifwcbLSU3BkA8a7PRbzvzkEBA==
 config:
+  FunctionApp:resourceGroupName: rg-test
   FunctionApp:projectPublishPath: publish.zip
   FunctionApp:workloadOrApplication: exp
   azure-native:location: West Europe
