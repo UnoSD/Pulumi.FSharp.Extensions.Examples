@@ -2,6 +2,13 @@ module Pulumi.FSharp.AzureNative.Components.FunctionAppPackage
 
 open Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternals
 
+let private coalesceOptionsOrFail lOpt rOpt error =
+    match lOpt, rOpt with
+    | Some v, None
+    | None  , Some v -> Some v
+    | None  , None   -> None
+    | Some _, Some _ -> failwith error
+
 type FunctionAppPackageBuilderConfig =
     {
         WorkloadName: string option
@@ -22,21 +29,15 @@ type FunctionAppPackageBuilder() =
                args.ProjectPackagePublishPath.Value
 
     member this.Combine(lArgs, rArgs) = {
-        WorkloadName              = match lArgs.WorkloadName, rArgs.WorkloadName with
-                                    | Some wn, None
-                                    | None   , Some wn -> Some wn
-                                    | None   , None    -> None
-                                    | Some _ , Some _  -> failwith "Duplicate workloadName in functionAppPackage CE"
-        ResourceGroupName         = match lArgs.ResourceGroupName, rArgs.ResourceGroupName with
-                                    | Some wn, None
-                                    | None   , Some wn -> Some wn
-                                    | None   , None    -> None
-                                    | Some _ , Some _  -> failwith "Duplicate resourceGroupName in functionAppPackage CE"
-        ProjectPackagePublishPath = match lArgs.ProjectPackagePublishPath, rArgs.ProjectPackagePublishPath with
-                                    | Some wn, None
-                                    | None   , Some wn -> Some wn
-                                    | None   , None    -> None
-                                    | Some _ , Some _  -> failwith "Duplicate projectPackagePublishPath in functionAppPackage CE"
+        WorkloadName              = coalesceOptionsOrFail lArgs.WorkloadName
+                                                          rArgs.WorkloadName
+                                                          "Duplicate workloadName in functionAppPackage CE"
+        ResourceGroupName         = coalesceOptionsOrFail lArgs.ResourceGroupName
+                                                          rArgs.ResourceGroupName
+                                                          "Duplicate resourceGroupName in functionAppPackage CE"
+        ProjectPackagePublishPath = coalesceOptionsOrFail lArgs.ProjectPackagePublishPath
+                                                          rArgs.ProjectPackagePublishPath
+                                                          "Duplicate projectPackagePublishPath in functionAppPackage CE"
     }
 
     [<CustomOperation("workloadName")>]
