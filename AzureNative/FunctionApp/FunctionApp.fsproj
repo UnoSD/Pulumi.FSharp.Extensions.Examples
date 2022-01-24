@@ -10,11 +10,12 @@
   <ItemGroup>
     <None Include="Pulumi.yaml" />
     <None Include="Pulumi.dev.yaml" />
-    <Compile Include="FunctionApp.fs" />
+    <Compile Include="FunctionAppPackage.fs" />
     <Compile Include="Program.fs" />
     <None Include="publish.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
 
   <ItemGroup>
