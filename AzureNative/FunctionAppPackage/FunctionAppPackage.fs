@@ -119,6 +119,14 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
                 
             return result.SubscriptionId
         }
+        
+    let deploymentPrincipalId =
+        output {
+            let! result =
+                GetClientConfig.InvokeAsync()
+                
+            return result.ObjectId
+        }
 
     let keyVault =
         vault {
@@ -202,6 +210,16 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
         principalType    PrincipalType.ServicePrincipal
         roleDefinitionId (Output.Format($"/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/{``Storage Blob Data Reader``}"))
         scope            container.Id
+    }
+    
+    let ``Key Vault Administrator`` =
+        "00482a5a-887f-4fb3-b363-3b7fe8e74483"
+    
+    roleAssignment {
+        name             "deployment-to-keyvault-admin"
+        principalId      deploymentPrincipalId
+        roleDefinitionId (Output.Format($"/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/{``Key Vault Administrator``}"))
+        scope            keyVault.Id
     }
     
     let ``Key Vault Secrets User`` = "4633458b-17de-408a-b874-0445c86b69e6"
