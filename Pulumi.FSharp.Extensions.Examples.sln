@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{1C936DCC-9
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FunctionApp", "AzureNative\FunctionApp\FunctionApp.fsproj", "{D8502631-8EC7-47BA-A6AB-20C042E602F9}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FunctionAppPackage", "AzureNative\FunctionAppPackage\FunctionAppPackage.fsproj", "{D8502631-8EC7-47BA-A6AB-20C042E602F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

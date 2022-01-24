@@ -1,4 +1,4 @@
-# DevelopmentVM
+# FunctionAppPackage
 
 Creates a **Function App** in **Azure** from a package published locally.
 
