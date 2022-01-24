@@ -1,6 +1,8 @@
 module Pulumi.FSharp.AzureNative.Components.FunctionAppPackage
 
 open Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternals
+open Pulumi.FSharp
+open Pulumi
 
 let private coalesceOptionsOrFail lOpt rOpt error =
     match lOpt, rOpt with
@@ -12,7 +14,7 @@ let private coalesceOptionsOrFail lOpt rOpt error =
 type FunctionAppPackageBuilderConfig =
     {
         WorkloadName: string option
-        ResourceGroupName: string option
+        ResourceGroupName: Input<string> option
         ProjectPackagePublishPath: string option
     }
 
@@ -45,6 +47,8 @@ type FunctionAppPackageBuilder() =
     
     [<CustomOperation("resourceGroupName")>]
     member _.ResourceGroupName(args, name) = { args with ResourceGroupName = Some name }
+    
+    member _.ResourceGroupName(args, name) = { args with ResourceGroupName = Some <| input name }
     
     [<CustomOperation("projectPackagePublishPath")>]
     member _.ProjectPackagePublishPath(args, path) = { args with ProjectPackagePublishPath = Some path }

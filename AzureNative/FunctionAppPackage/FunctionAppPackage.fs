@@ -31,12 +31,10 @@ type FunctionAppPackageResources =
 
 let private kvSku = KeyVault.Inputs.sku
 
-let create resourcesSuffix
-           (resourceGroupNameOutput : string)
-           functionAppPublishPath =
+let create workload (resourceGroupNameOutput : Input<string>) functionAppPublishPath =
     let storage =
         storageAccount {
-            name          $"sa{resourcesSuffix}"
+            name          $"sa{workload}"
             resourceGroup resourceGroupNameOutput
             sku           { name SkuName.Standard_LRS }
             kind          Kind.StorageV2
@@ -44,7 +42,7 @@ let create resourcesSuffix
         
     let functionPlan =
         appServicePlan {
-            name          $"asp-{resourcesSuffix}"
+            name          $"asp-{workload}"
             resourceGroup resourceGroupNameOutput            
             kind          "Linux"
             reserved      true
@@ -81,8 +79,8 @@ let create resourcesSuffix
             let! accountName =
                 storage.Name
             
-            let groupName =
-                resourceGroupNameOutput
+            let! groupName =
+                resourceGroupNameOutput.ToOutput()
         
             let! containerName =
                 container.Name
@@ -110,15 +108,15 @@ let create resourcesSuffix
 
     let appInsights =
         ``component`` {
-            name            $"ai-{resourcesSuffix}"
+            name            $"ai-{workload}"
             resourceGroup   resourceGroupNameOutput
             kind            "web"
         }
         
     let storageConnectionString =
         secretOutput {
-            let groupName =
-                resourceGroupNameOutput
+            let! groupName =
+                resourceGroupNameOutput.ToOutput()
 
             let! accountName =
                 storage.Name
@@ -148,7 +146,7 @@ let create resourcesSuffix
 
     let keyVault =
         vault {
-            name          $"kv-{resourcesSuffix}"
+            name          $"kv-{workload}"
             resourceGroup resourceGroupNameOutput
             
             vaultProperties {
@@ -207,7 +205,7 @@ let create resourcesSuffix
     
     let webApp =
         webApp {
-            name               $"app-{resourcesSuffix}"
+            name               $"app-{workload}"
             resourceGroup      resourceGroupNameOutput
             serverFarmId       functionPlan.Id
             kind               "FunctionApp"
