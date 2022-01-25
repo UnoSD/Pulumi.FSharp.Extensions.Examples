@@ -11,13 +11,13 @@ open Pulumi.FSharp.AzureNative.Compute
 open Pulumi.FSharp.AzureNative.Storage
 open Pulumi.AzureNative.Authorization
 open Pulumi.AzureNative.DevTestLab
+open Pulumi.FSharp.Command.Local
 open Pulumi.AzureNative.Network
 open Pulumi.AzureNative.Compute
 open Pulumi.AzureNative.Storage
 open Pulumi.FSharp.Outputs
 open Pulumi.FSharp.Config
 open Pulumi.FSharp.Assets
-open Pulumi.Command.Local
 open System.Text.Json
 open Pulumi.FSharp
 open DevelopmentVM
@@ -231,10 +231,12 @@ Deployment.run (fun () ->
         Output.Format($"-g {storageResourceGroup} -n {storageName} --subnet {snet.Id} --subscription {storageSubscription}")
     
     let updateStorageNetworkAcls =
-        Command("az-add-network-acl",
-                CommandArgs(Create = io (Output.Format($"az storage account network-rule add {arguments}")),
-                            Delete = io (Output.Format($"az storage account network-rule remove {arguments}"))),
-                CustomResourceOptions(DependsOn = inputList [ input snet ]))
+        command {
+            name      "az-add-network-acl"
+            create    (Output.Format($"az storage account network-rule add {arguments}"))
+            delete    (Output.Format($"az storage account network-rule remove {arguments}"))
+            dependsOn snet
+        }
     
     let scriptBlobUrl =
         output {
