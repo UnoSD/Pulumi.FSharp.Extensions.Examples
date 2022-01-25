@@ -1,0 +1,4 @@
+name: AKSCluster
+runtime: dotnet
+backend:
+  url: file://~/.pulumi/project-stacks/AKSCluster

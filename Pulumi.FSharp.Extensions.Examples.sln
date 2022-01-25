@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{1C936DCC-9
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FunctionAppPackage", "AzureNative\FunctionAppPackage\FunctionAppPackage.fsproj", "{D8502631-8EC7-47BA-A6AB-20C042E602F9}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AKSCluster", "Kubernetes\AKSCluster\AKSCluster.fsproj", "{EC1ACFCE-4118-49DA-B167-10A1506F9302}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +31,9 @@ Global
 		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8502631-8EC7-47BA-A6AB-20C042E602F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

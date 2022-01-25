@@ -1,0 +1,13 @@
+encryptionsalt: v1:KG9oybqh+8A=:v1:/nEPHxWVv1dYkFUW:bWRtY2bFF94SGsBNBBGvwhcLb1iFPg==
+config:
+  AKSCluster:kubeletUserIdentityId: /subscriptions/YourSubscriptionId/resourceGroups/YourResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/YourUserMi
+  AKSCluster:kubeletUserIdentityClientId: YourUserMiClientId
+  AKSCluster:kubeletUserIdentityObjectId: YourUserMiObjectId
+  AKSCluster:loadBalancerPublicIp: YourLbPipId
+  AKSCluster:logAnalyticsWorkspaceId: /subscriptions/YourSubscriptionId/resourceGroups/YourResourceGroup/providers/Microsoft.OperationalInsights/workspaces/YourLaWorkspace
+  AKSCluster:registryPath: registryyld5247.azurecr.io/mel
+  AKSCluster:sqlPassword:
+    secure: v1:ehia7ZLSW1W9pBqn:K+c8RUkyfcF7OlV/5CdSYVJyy5iBsYjBfw==
+  AKSCluster:sqlServer: sqlserveryld5247.database.windows.net
+  AKSCluster:sqlUser: sqladminyLd5247
+  azure-native:location: West Europe
