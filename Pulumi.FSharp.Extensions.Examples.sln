@@ -13,6 +13,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FunctionAppPackage", "Azure
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AKSCluster", "Kubernetes\AKSCluster\AKSCluster.fsproj", "{EC1ACFCE-4118-49DA-B167-10A1506F9302}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ContainerApps", "AzureNative\ContainerApps\ContainerApps.fsproj", "{81B927BF-2008-4D4B-A539-9AE60DFA7F54}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,5 +37,9 @@ Global
 		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1ACFCE-4118-49DA-B167-10A1506F9302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81B927BF-2008-4D4B-A539-9AE60DFA7F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81B927BF-2008-4D4B-A539-9AE60DFA7F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81B927BF-2008-4D4B-A539-9AE60DFA7F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81B927BF-2008-4D4B-A539-9AE60DFA7F54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
