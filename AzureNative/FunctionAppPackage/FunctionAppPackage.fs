@@ -1,6 +1,6 @@
 module Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternals
 
-open Pulumi.FSharp.AzureNative.Components.FunctionAppPackageInternalsRegion
+open Pulumi.FSharp.NamingConventions.Azure.Region
 open Pulumi.FSharp.AzureNative.KeyVault.Inputs
 open Pulumi.FSharp.AzureNative.Storage.Inputs
 open Pulumi.FSharp.AzureNative.Authorization
@@ -35,7 +35,7 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
     
     let storage =
         storageAccount {
-            name          $"sa{workload}{stack}{short}001"
+            name          $"sa{workload}{stack}{shortName}001"
             resourceGroup resourceGroupName
             sku           { name SkuName.Standard_LRS }
             kind          Kind.StorageV2
@@ -43,7 +43,7 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
         
     let functionPlan =
         appServicePlan {
-            name          $"asp-{workload}-{stack}-{short}-001"
+            name          $"asp-{workload}-{stack}-{shortName}-001"
             resourceGroup resourceGroupName            
             kind          "Linux"
             reserved      true
@@ -76,7 +76,7 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
 
     let appInsights =
         ``component`` {
-            name            $"ai-{workload}-{stack}-{short}-001"
+            name            $"ai-{workload}-{stack}-{shortName}-001"
             resourceGroup   resourceGroupName
             kind            "web"
         }
@@ -130,7 +130,7 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
 
     let keyVault =
         vault {
-            name          $"kv{workload}{stack}{short}001"
+            name          $"kv{workload}{stack}{shortName}001"
             resourceGroup resourceGroupName
             
             vaultProperties {
@@ -181,7 +181,7 @@ let create workload (resourceGroupName : Input<string>) functionAppPublishPath =
     
     let webApp =
         webApp {
-            name               $"func-{workload}-{stack}-{short}-001"
+            name               $"func-{workload}-{stack}-{shortName}-001"
             resourceGroup      resourceGroupName
             serverFarmId       functionPlan.Id
             kind               "FunctionApp"

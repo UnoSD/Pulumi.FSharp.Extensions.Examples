@@ -4,6 +4,7 @@ open Pulumi.FSharp.AzureNative.DevTestLab.Inputs
 open Pulumi.FSharp.AzureNative.Compute.Inputs
 open Pulumi.FSharp.AzureNative.Network.Inputs
 open Pulumi.FSharp.AzureNative.Authorization
+open Pulumi.FSharp.NamingConventions.Azure
 open Pulumi.FSharp.AzureNative.DevTestLab
 open Pulumi.FSharp.AzureNative.Resources
 open Pulumi.FSharp.AzureNative.Network
@@ -20,7 +21,6 @@ open Pulumi.FSharp.Config
 open Pulumi.FSharp.Assets
 open System.Text.Json
 open Pulumi.FSharp
-open DevelopmentVM
 open FSharp.Data
 open System.IO
 open Pulumi
@@ -36,19 +36,19 @@ let storageSku = AzureNative.Storage.Inputs.sku
 Deployment.run (fun () ->
     let rg =
         resourceGroup {
-            name $"rg-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name $"rg-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
         }
 
     let vnet =
         virtualNetwork {
-            name          $"vnet-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"vnet-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name            
             addressSpace  { addressPrefixes "10.0.1.0/24" }
         }
         
     let nsg =
         networkSecurityGroup {
-            name          $"nsg-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"nsg-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name
 
             securityRules [
@@ -95,7 +95,7 @@ Deployment.run (fun () ->
 
     let pip =
         publicIPAddress {
-            name                     $"pip-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name                     $"pip-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
             publicIPAllocationMethod IPAllocationMethod.Static
             resourceGroup            rg.Name
             
@@ -111,7 +111,7 @@ Deployment.run (fun () ->
 
     let nic =
         networkInterface {
-            name          $"nic-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"nic-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name
 
             ipConfigurations [                
@@ -126,7 +126,7 @@ Deployment.run (fun () ->
     
     let vm =
         virtualMachine {
-            name          $"vm-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"vm-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name
             licenseType   "Windows_Client"
             
@@ -141,14 +141,14 @@ Deployment.run (fun () ->
             }
             
             oSProfile {
-                computerName  $"dev{Deployment.Instance.StackName}{Region.short}001"
+                computerName  $"dev{Deployment.Instance.StackName}{Region.shortName}001"
                 adminUsername config.["vmUser"]
                 adminPassword secret.["vmPass"]
             }
             
             storageProfile {
                 oSDisk {
-                    name                  $"osdisk-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+                    name                  $"osdisk-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
                     createOption          DiskCreateOptionTypes.FromImage
                     managedDiskParameters { storageAccountType StorageAccountTypes.Premium_LRS }
                     diskSizeGB            127
@@ -170,7 +170,7 @@ Deployment.run (fun () ->
         }
     
     globalSchedule {
-        name             $"sch-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+        name             $"sch-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
         resourceName     (Output.Format($"shutdown-computevm-{vm.Name}"))
         resourceGroup    rg.Name
         targetResourceId vm.Id
@@ -188,7 +188,7 @@ Deployment.run (fun () ->
 
     let sa =
         storageAccount {
-            name          $"sadev{Deployment.Instance.StackName}{Region.short}001"
+            name          $"sadev{Deployment.Instance.StackName}{Region.shortName}001"
             resourceGroup rg.Name
             kind          Kind.StorageV2
             
@@ -283,7 +283,7 @@ Deployment.run (fun () ->
         InputJson.op_Implicit
     
     virtualMachineExtension {
-        name               $"vmext-dev-{Deployment.Instance.StackName}-{Region.short}-001"
+        name               $"vmext-dev-{Deployment.Instance.StackName}-{Region.shortName}-001"
         resourceGroup      rg.Name
         vmName             vm.Name
         vmExtensionName    "CustomScriptExtension"

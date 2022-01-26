@@ -1,6 +1,7 @@
 ﻿module Program
 
 open Pulumi.FSharp.AzureNative.Network.Inputs
+open Pulumi.FSharp.NamingConventions.Azure
 open Pulumi.FSharp.AzureNative.Resources
 open Pulumi.FSharp.AzureNative.Network
 open Pulumi.AzureNative.Network
@@ -70,12 +71,12 @@ Deployment.run (fun () ->
 
     let rg =
         resourceGroup {
-            name $"rg-vpn-{Deployment.Instance.StackName}-{Region.short}-001"
+            name $"rg-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
         }
 
     let vnet =
         virtualNetwork {
-            name          $"vnet-vpn-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"vnet-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name            
             addressSpace  { addressPrefixes "10.255.0.0/16" }
         }
@@ -90,7 +91,7 @@ Deployment.run (fun () ->
 
     let pip =
         publicIPAddress {
-            name                     $"pip-vpn-{Deployment.Instance.StackName}-{Region.short}-001"
+            name                     $"pip-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
             publicIPAllocationMethod IPAllocationMethod.Dynamic
             resourceGroup            rg.Name
             
@@ -102,7 +103,7 @@ Deployment.run (fun () ->
     let gateway =
         virtualNetworkGateway {
             resourceGroup rg.Name
-            name          $"vpng-vpn-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"vpng-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
             
             ipConfigurations [
                 virtualNetworkGatewayIPConfiguration {

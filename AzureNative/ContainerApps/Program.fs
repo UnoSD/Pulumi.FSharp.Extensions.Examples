@@ -3,6 +3,7 @@
 open Pulumi.FSharp.AzureNative.OperationalInsights
 open Pulumi.FSharp.AzureNative.Storage.Inputs
 open Pulumi.AzureNative.OperationalInsights
+open Pulumi.FSharp.NamingConventions.Azure
 open Pulumi.FSharp.AzureNative.Web.Inputs
 open Pulumi.FSharp.AzureNative.Resources
 open Pulumi.FSharp.AzureNative.Storage
@@ -10,18 +11,17 @@ open Pulumi.FSharp.AzureNative.Web
 open Pulumi.AzureNative.Storage
 open Pulumi.AzureNative.Web
 open Pulumi.FSharp
-open ContainerApps
 open Pulumi
 
 Deployment.run (fun () ->
     let rg =
         resourceGroup {
-            name $"rg-capp-{Deployment.Instance.StackName}-{Region.short}-001"
+            name $"rg-capp-{Deployment.Instance.StackName}-{Region.shortName}-001"
         }
 
     let laWorkspace =
         workspace {
-            name          $"la-capp-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"la-capp-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name
         }
 
@@ -39,7 +39,7 @@ Deployment.run (fun () ->
     *)
     let kubeEnv =
         kubeEnvironment {
-            name          $"ke-capp-{Deployment.Instance.StackName}-{Region.short}-001"
+            name          $"ke-capp-{Deployment.Instance.StackName}-{Region.shortName}-001"
             resourceGroup rg.Name
             //``type``      "Managed"
             //environmentType "Managed"
@@ -65,7 +65,7 @@ Deployment.run (fun () ->
     
     let storage =
         storageAccount {
-            name          $"sacapp{Deployment.Instance.StackName}{Region.short}001"
+            name          $"sacapp{Deployment.Instance.StackName}{Region.shortName}001"
             resourceGroup rg.Name
             kind          Kind.StorageV2
             sku           { name SkuName.Standard_LRS }
@@ -88,7 +88,7 @@ Deployment.run (fun () ->
         "queueconnection"
     
     containerApp {
-        name              $"ca-capp-{Deployment.Instance.StackName}-{Region.short}-001"
+        name              $"ca-capp-{Deployment.Instance.StackName}-{Region.shortName}-001"
         resourceGroup     rg.Name
         kind              "containerApp"
         kubeEnvironmentId kubeEnv.Id
