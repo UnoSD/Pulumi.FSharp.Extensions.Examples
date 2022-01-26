@@ -12,6 +12,10 @@ $env:Path += ";C:\ProgramData\chocolatey\bin"
 
 choco install resharper -y
 
+# Keep RDP session alive after disconnect
+
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name KeepAliveEnable -PropertyType DWORD -Value 1 -Force
+
 # Map network drive
 
 cmd.exe /C "cmdkey /add:`"<storageAccount>.file.core.windows.net`" /user:`"Azure\<storageAccount>`" /pass:`"<storageKey>`""
