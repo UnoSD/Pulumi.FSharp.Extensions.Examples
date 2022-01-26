@@ -18,5 +18,5 @@ New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" 
 
 # Map network drive
 
-cmd.exe /C "cmdkey /add:`"<storageAccount>.file.core.windows.net`" /user:`"Azure\<storageAccount>`" /pass:`"<storageKey>`""
+cmd.exe /C "cmdkey /add:`"<storageAccount>.file.core.windows.net`" /user:`"localhost\<storageAccount>`" /pass:`"<storageKey>`""
 net use z: "\\<storageAccount>.file.core.windows.net\<shareName>" /persistent:yes
