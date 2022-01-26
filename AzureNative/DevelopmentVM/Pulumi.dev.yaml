@@ -11,4 +11,5 @@ config:
     secure: v1:gS2HPf2wtPdT6WT3:F4fbMat09MGYvYpCmpAEyJJYDIyYhxAgN8E=
   DevelopmentVM:vmShutdownNotifyEmail: your@email.com
   DevelopmentVM:vmUser: yourVmUser
+  DevelopmentVM:vmSize: Standard_D16ds_v4
   azure-native:location: Switzerland North

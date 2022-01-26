@@ -131,7 +131,7 @@ Deployment.run (fun () ->
             licenseType   "Windows_Client"
             
             hardwareProfile {
-                vmSize "Standard_D16ds_v4"
+                vmSize config.["vmSize"]
             }
             
             networkProfile {
