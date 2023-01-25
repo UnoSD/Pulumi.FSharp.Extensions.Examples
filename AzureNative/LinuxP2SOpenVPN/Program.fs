@@ -37,12 +37,6 @@ Deployment.run (fun () ->
                 }
             ]
         }
-        
-    let clientPrivateKey =
-        privateKey {
-            name      "client-private-key"
-            algorithm "RSA"
-        }
 
     let rg =
         resourceGroup {
@@ -120,30 +114,13 @@ Deployment.run (fun () ->
             }
         }
 
-    let clientCertificateRequest =
-        certRequest {
-            name          "client-certificate-request"
-            keyAlgorithm  "RSA"
-            privateKeyPem clientPrivateKey.PrivateKeyPem
-            dnsNames      "client"
-            
-            subjects      [
-                certRequestSubject {
-                    commonName "client"
-                }
-            ]
+    let clientPrivateKey =
+        privateKey {
+            name      "client-private-key"
+            algorithm "RSA"
         }
 
-    let clientCertificate =
-        locallySignedCert {
-            name                "client-certificate"
-            caCertPem           caCertificate.CertPem
-            caKeyAlgorithm      "RSA"
-            caPrivateKeyPem     caPrivateKey.PrivateKeyPem
-            certRequestPem      clientCertificateRequest.CertRequestPem
-            validityPeriodHours (1095 * 24)
-            allowedUses         "client_auth"
-        }
+    let clientCertificate = ClientCertificate.create caCertificate caPrivateKey clientPrivateKey "client"
 
     [ "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile clientCertificate clientPrivateKey rg gateway :> obj ]
     |> dict

@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="X509.fs" />
     <Compile Include="VpnProfile.fs" />
+    <Compile Include="ClientCertificate.fs" />
     <Compile Include="Program.fs" />
     <None Include="Pulumi.yaml" />
     <None Include="Pulumi.prod.yaml" />
