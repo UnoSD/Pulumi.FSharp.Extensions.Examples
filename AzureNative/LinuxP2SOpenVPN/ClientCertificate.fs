@@ -7,16 +7,10 @@ open Pulumi.Tls
 let create (caCertificate : SelfSignedCert)
            (caPrivateKey : PrivateKey)
            (clientPrivateKey : PrivateKey)
-           (clientName : string) =
-    // This is for backward compatibility with existing stack, can be removed
-    let resourceNameSuffix =
-        match clientName with
-        | "client" -> ""
-        | _        -> $"-{clientName}"
-    
+           (clientName : string) =    
     let clientCertificateRequest =
         certRequest {
-            name          $"client-certificate-request{resourceNameSuffix}"
+            name          $"client-certificate-request-{clientName}"
             keyAlgorithm  "RSA"
             privateKeyPem clientPrivateKey.PrivateKeyPem
             dnsNames      clientName
@@ -29,7 +23,7 @@ let create (caCertificate : SelfSignedCert)
         }
 
     locallySignedCert {
-        name                $"client-certificate{resourceNameSuffix}"
+        name                $"client-certificate-{clientName}"
         caCertPem           caCertificate.CertPem
         caKeyAlgorithm      "RSA"
         caPrivateKeyPem     caPrivateKey.PrivateKeyPem

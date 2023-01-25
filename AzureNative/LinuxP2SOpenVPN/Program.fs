@@ -119,9 +119,28 @@ Deployment.run (fun () ->
             name      "client-private-key"
             algorithm "RSA"
         }
-
-    let clientCertificate = ClientCertificate.create caCertificate caPrivateKey clientPrivateKey "client"
-
-    [ "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile clientCertificate clientPrivateKey rg gateway :> obj ]
+    
+    let clientCertificate =
+        ClientCertificate.create caCertificate caPrivateKey clientPrivateKey "client"
+    
+    let additionalClientNames =
+        Config().GetObject<string[]>("additionalClients")
+        |> Option.ofObj
+        |> Option.map List.ofArray
+    
+    let profileResult = VpnProfile.generate rg gateway
+    
+    let clientNameToOvpnFile =
+           (fun (client : string)     -> client, ClientCertificate.create caCertificate caPrivateKey clientPrivateKey client)
+        >> (fun (client, certificate) -> client, VpnProfile.getOpenVpnConfigurationFile certificate clientPrivateKey profileResult)
+        >> (fun (client, ovpn)        -> $"OpenVpnFile-{client}", ovpn :> obj)
+    
+    let additionalOvpnFiles =
+        additionalClientNames
+        |> Option.map (List.map clientNameToOvpnFile)
+        |> Option.defaultValue []
+    
+    ( "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile clientCertificate clientPrivateKey profileResult :> obj )
+    :: additionalOvpnFiles
     |> dict
 )
