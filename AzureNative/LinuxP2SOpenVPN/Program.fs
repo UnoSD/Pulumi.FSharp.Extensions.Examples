@@ -44,31 +44,6 @@ Deployment.run (fun () ->
             algorithm "RSA"
         }
 
-    let clientCertificateRequest =
-        certRequest {
-            name          "client-certificate-request"
-            keyAlgorithm  "RSA"
-            privateKeyPem clientPrivateKey.PrivateKeyPem
-            dnsNames      "client"
-            
-            subjects      [
-                certRequestSubject {
-                    commonName "client"
-                }
-            ]
-        }
-
-    let clientCertificate =
-        locallySignedCert {
-            name                "client-certificate"
-            caCertPem           caCertificate.CertPem
-            caKeyAlgorithm      "RSA"
-            caPrivateKeyPem     caPrivateKey.PrivateKeyPem
-            certRequestPem      clientCertificateRequest.CertRequestPem
-            validityPeriodHours (1095 * 24)
-            allowedUses         "client_auth"
-        }
-
     let rg =
         resourceGroup {
             name $"rg-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
@@ -143,6 +118,31 @@ Deployment.run (fun () ->
                     addressPrefixes "172.16.201.0/24"
                 }
             }
+        }
+
+    let clientCertificateRequest =
+        certRequest {
+            name          "client-certificate-request"
+            keyAlgorithm  "RSA"
+            privateKeyPem clientPrivateKey.PrivateKeyPem
+            dnsNames      "client"
+            
+            subjects      [
+                certRequestSubject {
+                    commonName "client"
+                }
+            ]
+        }
+
+    let clientCertificate =
+        locallySignedCert {
+            name                "client-certificate"
+            caCertPem           caCertificate.CertPem
+            caKeyAlgorithm      "RSA"
+            caPrivateKeyPem     caPrivateKey.PrivateKeyPem
+            certRequestPem      clientCertificateRequest.CertRequestPem
+            validityPeriodHours (1095 * 24)
+            allowedUses         "client_auth"
         }
 
     [ "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile clientCertificate clientPrivateKey rg gateway :> obj ]
