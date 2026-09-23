@@ -1,0 +1,32 @@
+Generate client cert from Pulumi
+
+Extract public and private client certificate from ovpn file
+
+Save public (P2S client certificate) (including opening an closing ---) to client.pem
+
+Save private (P2S client certificate private key) (including opening an closing ---) to client.key
+
+Run from Windows `certutil -mergepfx client.pem client.pfx` (leave password empty)
+
+Now import the PFX file (double click pfx and always next)
+
+Run in PowerShell: Get-ChildItem Cert:\CurrentUser\My | Select Thumbprint, Issuer, Subject
+
+Copy the resulting thumbprint
+
+Download the Azure VPN Client config from the Azure portal on the Gateway under P2S configuration
+
+Replace the previous XXXXXXXXXXXXX with the correct thumbprint
+  <clientauth>
+    <aad i:nil="true" />
+    <cert>
+      <hash i:nil="true" />
+      <issuer>XXXXXXXXXXXXX</issuer>
+    </cert>
+    <type>cert</type>
+    <usernamepass i:nil="true" />
+  </clientauth>
+
+Import in Azure VPN Client
+
+Connect!

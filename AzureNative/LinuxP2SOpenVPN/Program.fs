@@ -61,11 +61,11 @@ Deployment.run (fun () ->
     let pip =
         publicIPAddress {
             name                     $"pip-vpn-{Deployment.Instance.StackName}-{Region.shortName}-001"
-            publicIPAllocationMethod IPAllocationMethod.Dynamic
+            publicIPAllocationMethod IPAllocationMethod.Static
             resourceGroup            rg.Name
             
             publicIPAddressSku {
-                name "Basic"
+                name "Standard"
             }
         }
     
