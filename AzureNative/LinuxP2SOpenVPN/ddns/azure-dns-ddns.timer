@@ -1,0 +1,12 @@
+[Unit]
+Description=Check the home IPv4 address every five minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=5min
+RandomizedDelaySec=20s
+AccuracySec=15s
+Unit=azure-dns-ddns.service
+
+[Install]
+WantedBy=timers.target
