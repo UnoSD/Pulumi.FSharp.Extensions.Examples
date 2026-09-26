@@ -10,7 +10,7 @@ let create (caCertificate : SelfSignedCert)
            (clientName : string) =    
     let clientCertificateRequest =
         certRequest {
-            name          $"client-certificate-request-{clientName}"
+            name          $"individual-certificate-request-{clientName}"
             keyAlgorithm  "RSA"
             privateKeyPem clientPrivateKey.PrivateKeyPem
             dnsNames      clientName
@@ -23,7 +23,7 @@ let create (caCertificate : SelfSignedCert)
         }
 
     locallySignedCert {
-        name                $"client-certificate-{clientName}"
+        name                $"individual-certificate-{clientName}"
         caCertPem           caCertificate.CertPem
         caKeyAlgorithm      "RSA"
         caPrivateKeyPem     caPrivateKey.PrivateKeyPem

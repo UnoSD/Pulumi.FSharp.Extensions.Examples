@@ -15,28 +15,28 @@ open Pulumi
 open VPN
 
 Deployment.run (fun () ->    
-    let caPrivateKey =
+    let individualCaPrivateKey =
         privateKey {
-            name      "ca-private-key"
+            name      "individual-ca-private-key"
             algorithm "RSA"
         }
 
-    let caCertificate =
+    let individualCaCertificate =
         selfSignedCert {
-            name                "ca-certificate"
+            name                "individual-ca-certificate"
             keyAlgorithm        "RSA"
-            privateKeyPem       caPrivateKey.PrivateKeyPem
+            privateKeyPem       individualCaPrivateKey.PrivateKeyPem
             isCaCertificate     true
             validityPeriodHours (1095 * 24)
-            
+
             allowedUses [
                 "cert_signing"
                 "crl_signing"
             ]
-            
+
             subjects [
                 selfSignedCertSubject {
-                    commonName "VPN CA"
+                    commonName "VPN Individual CA"
                 }
             ]
         }
@@ -106,8 +106,8 @@ Deployment.run (fun () ->
                 
                 vpnClientRootCertificates [
                     vpnClientRootCertificate {
-                        name           "P2SRootCert"
-                        publicCertData (caCertificate.CertPem.Apply(X509.removeBeginEndCertificate))
+                        name           "P2SIndividualRootCert"
+                        publicCertData (individualCaCertificate.CertPem.Apply(X509.removeBeginEndCertificate))
                     }
                 ]
                 
@@ -274,33 +274,39 @@ Deployment.run (fun () ->
               "DnsUpdaterCredentialExpiresAt", credential.EndDate :> obj ]
         | _ -> []
 
-    let clientPrivateKey =
-        privateKey {
-            name      "client-private-key"
-            algorithm "RSA"
-        }
-    
-    let clientCertificate =
-        ClientCertificate.create caCertificate caPrivateKey clientPrivateKey "client"
-    
     let additionalClientNames =
         config.GetObject<string[]>("additionalClients")
         |> Option.ofObj
         |> Option.map List.ofArray
     
     let profileResult = VpnProfile.generate rg gateway
-    
-    let clientNameToOvpnFile =
-           (fun (client : string)     -> client, ClientCertificate.create caCertificate caPrivateKey clientPrivateKey client)
-        >> (fun (client, certificate) -> client, VpnProfile.getOpenVpnConfigurationFile certificate clientPrivateKey profileResult)
-        >> (fun (client, ovpn)        -> $"OpenVpnFile-{client}", ovpn :> obj)
-    
+
+    let defaultKey =
+        privateKey {
+            name      "private-key-client"
+            algorithm "RSA"
+        }
+
+    let defaultCert =
+        ClientCertificate.create individualCaCertificate individualCaPrivateKey defaultKey "client"
+
+    let clientNameToOvpnFile (client : string) =
+        let key =
+            privateKey {
+                name      $"private-key-{client}"
+                algorithm "RSA"
+            }
+        let cert = ClientCertificate.create individualCaCertificate individualCaPrivateKey key client
+        $"OpenVpnFile-{client}", VpnProfile.getOpenVpnConfigurationFile cert key profileResult :> obj
+
     let additionalOvpnFiles =
         additionalClientNames
         |> Option.map (List.map clientNameToOvpnFile)
         |> Option.defaultValue []
-    
-    ( "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile clientCertificate clientPrivateKey profileResult :> obj )
-    :: (additionalOvpnFiles @ siteToSiteOutputs @ dnsUpdaterOutputs)
+
+    ( "OpenVpnFile", VpnProfile.getOpenVpnConfigurationFile defaultCert defaultKey profileResult :> obj )
+    :: additionalOvpnFiles
+    @ siteToSiteOutputs
+    @ dnsUpdaterOutputs
     |> dict
 )
