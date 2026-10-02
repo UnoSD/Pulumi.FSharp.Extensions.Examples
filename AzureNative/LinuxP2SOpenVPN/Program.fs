@@ -92,8 +92,8 @@ Deployment.run (fun () ->
             ]
             
             virtualNetworkGatewaySku {
-                name VirtualNetworkGatewaySkuName.VpnGw1
-                tier VirtualNetworkGatewaySkuTier.VpnGw1
+                name VirtualNetworkGatewaySkuName.VpnGw1AZ
+                tier VirtualNetworkGatewaySkuTier.VpnGw1AZ
             }
             
             gatewayType VirtualNetworkGatewayType.Vpn            
