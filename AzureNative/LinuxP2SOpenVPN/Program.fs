@@ -151,6 +151,28 @@ Deployment.run (fun () ->
                 enableBgp          false
                 sharedKey          preSharedKey.Result
 
+                // route-based: wildcard 0.0.0.0/0 selectors
+                usePolicyBasedTrafficSelectors false
+
+                ipsecPolicies [
+                    ipsecPolicy {
+                        // IKE / Phase 1  (tool: aes256-sha256-prfsha256-modp2048)
+                        ikeEncryption       IkeEncryption.AES256
+                        // sets integrity AND prf
+                        ikeIntegrity        IkeIntegrity.SHA256
+                        // modp2048
+                        dhGroup             DhGroup.DHGroup14
+                        // IPsec / ESP / Phase 2  (tool: aes256gcm16-modp2048)
+                        ipsecEncryption     IpsecEncryption.GCMAES256
+                        // GCM => enc & integrity must match
+                        ipsecIntegrity      IpsecIntegrity.GCMAES256
+                        // modp2048
+                        pfsGroup            PfsGroup.PFS2048
+                        saLifeTimeSeconds   27000
+                        saDataSizeKilobytes 102400000
+                    }
+                ]
+
                 virtualNetworkGateway1 (Inputs.virtualNetworkGateway {
                     id gateway.Id
                 })
